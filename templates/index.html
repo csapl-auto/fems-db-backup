@@ -7,7 +7,7 @@
     <!-- Tailwind CSS & FontAwesome Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/static/css/style.css?v=1.2">
+    <link rel="stylesheet" href="/static/css/style.css?v=2.0">
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-rose-500 selection:text-white">
 
@@ -31,15 +31,11 @@
                     <i class="fa-regular fa-clock text-rose-400"></i>
                     <span id="currentTime">--:--:--</span>
                 </div>
-                <button onclick="openSettingsModal()" id="btnSettings" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-slate-200 transition flex items-center gap-2">
-                    <i class="fa-solid fa-gear text-amber-400"></i>
-                    <span>Email & Settings</span>
-                </button>
-                <button onclick="testSmtp()" id="btnTestSmtp" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-slate-200 transition flex items-center gap-2">
+                <button onclick="testSmtp()" id="btnTestSmtpHeader" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-slate-200 transition flex items-center gap-2">
                     <i class="fa-solid fa-paper-plane text-cyan-400"></i>
                     <span>Test Email</span>
                 </button>
-                <div class="relative inline-block text-left" id="backupDropdownContainer">
+                <div class="relative inline-block text-left">
                     <button onclick="triggerBackup('all')" id="btnMainBackup" class="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow-lg shadow-rose-600/30 transition flex items-center gap-2">
                         <i class="fa-solid fa-bolt"></i>
                         <span>Run All Backups</span>
@@ -52,7 +48,7 @@
     <!-- Main Container -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
-        <!-- Alerts Banner (if any) -->
+        <!-- Alerts Toast Banner -->
         <div id="statusToast" class="hidden rounded-xl p-4 border transition-all duration-300 flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <i id="toastIcon" class="text-lg"></i>
@@ -114,13 +110,13 @@
             <!-- Schedule Card -->
             <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-sm hover:border-slate-700 transition">
                 <div class="flex items-center justify-between text-slate-400 mb-3">
-                    <span class="text-xs uppercase font-semibold tracking-wider">Daily Schedule</span>
+                    <span class="text-xs uppercase font-semibold tracking-wider">Automated Schedule</span>
                     <i class="fa-solid fa-calendar-check text-indigo-400"></i>
                 </div>
-                <div class="text-2xl font-bold text-white tracking-tight" id="schedTimeVal">07:00 AM</div>
+                <div class="text-2xl font-bold text-white tracking-tight" id="schedTimeVal">07:00 PKT</div>
                 <div class="mt-2 flex items-center gap-1.5 text-xs text-slate-400">
                     <i class="fa-solid fa-rotate text-indigo-400"></i>
-                    <span id="nextSchedVal">Next: Today at 07:00</span>
+                    <span id="nextSchedVal">Next: Loading...</span>
                 </div>
             </div>
 
@@ -163,6 +159,93 @@
                     <i class="fa-solid fa-rotate text-indigo-400"></i> Refresh
                 </button>
             </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- INLINE SETTINGS PANEL: Email Recipients & Frequency (Direct on Home Page) -->
+        <!-- ========================================================================= -->
+        <div class="rounded-2xl bg-slate-900 border border-slate-800 p-6 shadow-sm space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div>
+                    <h2 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-amber-400"></i> Email Notifications & Backup Frequency Settings
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">
+                        Configure who receives backup reports and how frequently automated snapshots are taken.
+                    </p>
+                </div>
+                <button type="button" onclick="testSmtp()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-medium transition flex items-center gap-2">
+                    <i class="fa-solid fa-paper-plane text-cyan-400"></i> Send Test Email Now
+                </button>
+            </div>
+
+            <form id="homeSettingsForm" onsubmit="saveHomeSettings(event)" class="space-y-4 text-xs">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- Primary Recipient (TO) -->
+                    <div>
+                        <label class="block font-semibold text-slate-200 mb-1">
+                            Primary Recipient (To:) <span class="text-rose-400">*</span>
+                        </label>
+                        <input type="text" id="cfgRecipient" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 font-mono focus:border-rose-500 focus:outline-none" placeholder="itsupport@crescent.com.pk, hasnain.kaimkhani@crescent.com.pk">
+                        <p class="text-slate-500 mt-1 text-[11px]">Separate multiple emails with commas.</p>
+                    </div>
+
+                    <!-- CC Recipients (CC) -->
+                    <div>
+                        <label class="block font-semibold text-slate-200 mb-1">
+                            CC Recipients (Cc:) <span class="text-slate-400 font-normal">(Optional)</span>
+                        </label>
+                        <input type="text" id="cfgCc" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 font-mono focus:border-rose-500 focus:outline-none" placeholder="manager@crescent.com.pk">
+                        <p class="text-slate-500 mt-1 text-[11px]">Stakeholders to receive email copy.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-2">
+                    <!-- Backup Frequency -->
+                    <div>
+                        <label class="block font-semibold text-slate-200 mb-1">Backup Frequency</label>
+                        <select id="cfgFrequency" onchange="toggleWeeklyDaySelector()" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 font-medium focus:border-rose-500 focus:outline-none">
+                            <option value="daily">Daily (Every Day)</option>
+                            <option value="weekly">Weekly (Once a Week)</option>
+                        </select>
+                    </div>
+
+                    <!-- Day of Week (Weekly) -->
+                    <div id="weeklyDayContainer" class="hidden">
+                        <label class="block font-semibold text-slate-200 mb-1">Day of the Week</label>
+                        <select id="cfgWeeklyDay" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 font-medium focus:border-rose-500 focus:outline-none">
+                            <option value="monday">Every Monday</option>
+                            <option value="tuesday">Every Tuesday</option>
+                            <option value="wednesday">Every Wednesday</option>
+                            <option value="thursday">Every Thursday</option>
+                            <option value="friday">Every Friday</option>
+                            <option value="saturday">Every Saturday</option>
+                            <option value="sunday">Every Sunday</option>
+                        </select>
+                    </div>
+
+                    <!-- Backup Time -->
+                    <div>
+                        <label class="block font-semibold text-slate-200 mb-1">Backup Time (PKT)</label>
+                        <input type="text" id="cfgDailyTime" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 font-mono focus:border-rose-500 focus:outline-none" placeholder="07:00">
+                    </div>
+
+                    <!-- Retention Horizon -->
+                    <div>
+                        <label class="block font-semibold text-slate-200 mb-1">Retention Horizon (Days)</label>
+                        <input type="number" id="cfgRetentionDays" min="1" max="365" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 font-mono focus:border-rose-500 focus:outline-none" placeholder="30">
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+                    <div class="text-[11px] text-slate-400">
+                        <span class="font-semibold text-slate-300">Relay:</span> 10.1.0.23:25 &bull; <span class="font-semibold text-slate-300">Sender:</span> alerts@crescent.com.pk
+                    </div>
+                    <button type="submit" id="btnSaveSettings" class="px-5 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow-lg shadow-rose-600/30 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Settings
+                    </button>
+                </div>
+            </form>
         </div>
 
         <!-- Backup Repository Tree Explorer -->
@@ -214,6 +297,7 @@
                     <h4 class="font-bold text-slate-200 text-sm mb-1 text-cyan-400">3. Restore Staging PostgreSQL & MongoDB</h4>
                     <pre class="bg-slate-950 p-3 rounded-lg border border-slate-800 font-mono text-emerald-400 select-all overflow-x-auto">docker exec -i fems-staging pg_restore -U fems_admin -d fems_staging --clean --if-exists &lt; postgres_fems_staging_YYYYMMDD.dump
 mongorestore --uri="mongodb://fems_logger:SecureLogsPwd456@127.0.0.1:27017/fems_audit_staging_db?authSource=admin" --archive=mongodb_fems_audit_staging_YYYYMMDD.archive --gzip --drop</pre>
+                </div>
             </div>
 
             <div class="pt-4 border-t border-slate-800 flex justify-end">
@@ -222,99 +306,335 @@ mongorestore --uri="mongodb://fems_logger:SecureLogsPwd456@127.0.0.1:27017/fems_
         </div>
     </div>
 
-    <!-- Email & System Settings Modal -->
-    <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-                <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-envelope-open-text text-amber-400"></i> Email Notifications & System Settings
-                </h3>
-                <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
+    <!-- Full Inline JavaScript to Prevent Any Browser Caching Issues -->
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const clockEl = document.getElementById("currentTime");
+            if (clockEl) {
+                clockEl.textContent = now.toLocaleTimeString('en-US', { hour12: false });
+            }
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
 
-            <form id="settingsForm" onsubmit="saveSettings(event)" class="space-y-4 text-xs">
-                <!-- Primary Recipient (TO) -->
-                <div>
-                    <label class="block font-semibold text-slate-200 mb-1">
-                        Primary Recipient (To:) <span class="text-rose-400">*</span>
-                    </label>
-                    <p class="text-slate-400 mb-1.5 text-[11px]">Comma-separated email address(es) that receive the daily backup reports & alerts.</p>
-                    <input type="text" id="cfgRecipient" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 font-mono focus:border-rose-500 focus:outline-none" placeholder="itsupport@crescent.com.pk, havenain.kaimkhani@crescent.com.pk">
-                </div>
+        function showToast(message, type = "info") {
+            const toast = document.getElementById("statusToast");
+            const icon = document.getElementById("toastIcon");
+            const msg = document.getElementById("toastMsg");
 
-                <!-- CC Recipients (CC) -->
-                <div>
-                    <label class="block font-semibold text-slate-200 mb-1">
-                        CC Recipients (Cc:) <span class="text-slate-400 font-normal">(Optional)</span>
-                    </label>
-                    <p class="text-slate-400 mb-1.5 text-[11px]">Comma-separated additional stakeholders to keep in copy.</p>
-                    <input type="text" id="cfgCc" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 font-mono focus:border-rose-500 focus:outline-none" placeholder="manager@crescent.com.pk, dba@crescent.com.pk">
-                </div>
+            toast.className = "rounded-xl p-4 border transition-all duration-300 flex items-center justify-between";
 
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- Backup Frequency -->
-                    <div>
-                        <label class="block font-semibold text-slate-200 mb-1">Backup Frequency</label>
-                        <select id="cfgFrequency" onchange="toggleWeeklyDaySelector()" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 font-medium focus:border-rose-500 focus:outline-none">
-                            <option value="daily">Daily (Every Day)</option>
-                            <option value="weekly">Weekly (Once a Week)</option>
-                        </select>
-                    </div>
+            if (type === "success") {
+                toast.classList.add("bg-emerald-950/80", "border-emerald-500/30", "text-emerald-300");
+                icon.className = "fa-solid fa-circle-check text-emerald-400";
+            } else if (type === "error") {
+                toast.classList.add("bg-rose-950/80", "border-rose-500/30", "text-rose-300");
+                icon.className = "fa-solid fa-circle-exclamation text-rose-400";
+            } else if (type === "loading") {
+                toast.classList.add("bg-slate-900", "border-indigo-500/30", "text-indigo-300");
+                icon.className = "fa-solid fa-circle-notch fa-spin text-indigo-400";
+            } else {
+                toast.classList.add("bg-slate-900", "border-slate-700", "text-slate-300");
+                icon.className = "fa-solid fa-circle-info text-cyan-400";
+            }
 
-                    <!-- Weekly Day Picker (Shown when Weekly is selected) -->
-                    <div id="weeklyDayContainer" class="hidden">
-                        <label class="block font-semibold text-slate-200 mb-1">Select Day of Week</label>
-                        <select id="cfgWeeklyDay" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 font-medium focus:border-rose-500 focus:outline-none">
-                            <option value="monday">Every Monday</option>
-                            <option value="tuesday">Every Tuesday</option>
-                            <option value="wednesday">Every Wednesday</option>
-                            <option value="thursday">Every Thursday</option>
-                            <option value="friday">Every Friday</option>
-                            <option value="saturday">Every Saturday</option>
-                            <option value="sunday">Every Sunday</option>
-                        </select>
-                    </div>
+            msg.textContent = message;
+            toast.classList.remove("hidden");
+        }
 
-                    <!-- Daily Backup Time -->
-                    <div id="dailyTimeContainer">
-                        <label class="block font-semibold text-slate-200 mb-1">Backup Time (PKT)</label>
-                        <input type="text" id="cfgDailyTime" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 font-mono focus:border-rose-500 focus:outline-none" placeholder="07:00">
-                    </div>
-                </div>
+        function closeToast() {
+            document.getElementById("statusToast").classList.add("hidden");
+        }
 
-                <!-- Retention Horizon -->
-                <div>
-                    <label class="block font-semibold text-slate-200 mb-1">Retention Horizon (Days)</label>
-                    <input type="number" id="cfgRetentionDays" min="1" max="365" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 font-mono focus:border-rose-500 focus:outline-none" placeholder="30">
-                </div>
+        function openDrModal() {
+            document.getElementById("drModal").classList.remove("hidden");
+        }
 
-                <!-- SMTP Server Info (Read-Only Relay) -->
-                <div class="p-3 bg-slate-950/80 rounded-lg border border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
-                    <div>
-                        <span class="font-semibold text-slate-300">SMTP Relay:</span> 10.1.0.23:25 (Internal)
-                    </div>
-                    <div>
-                        <span class="font-semibold text-slate-300">Sender:</span> alerts@crescent.com.pk
-                    </div>
-                </div>
+        function closeDrModal() {
+            document.getElementById("drModal").classList.add("hidden");
+        }
 
-                <div class="pt-4 border-t border-slate-800 flex items-center justify-between">
-                    <button type="button" onclick="testSmtp()" class="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition flex items-center gap-2">
-                        <i class="fa-solid fa-paper-plane text-cyan-400"></i> Send Test Email Now
-                    </button>
+        function toggleWeeklyDaySelector() {
+            const freq = document.getElementById("cfgFrequency").value;
+            const weeklyContainer = document.getElementById("weeklyDayContainer");
+            if (freq === "weekly") {
+                weeklyContainer.classList.remove("hidden");
+            } else {
+                weeklyContainer.classList.add("hidden");
+            }
+        }
 
-                    <div class="flex items-center space-x-2">
-                        <button type="button" onclick="closeSettingsModal()" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition">Cancel</button>
-                        <button type="submit" id="btnSaveSettings" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-floppy-disk"></i> Save Settings
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
+        async function loadConfigIntoForm() {
+            try {
+                const res = await fetch("/api/config");
+                if (res.ok) {
+                    const cfg = await res.json();
+                    const smtp = cfg.smtp || {};
+                    const sched = cfg.schedule || {};
+                    const storage = cfg.storage || {};
 
-    <!-- Scripts -->
-    <script src="/static/js/app.js?v=1.2"></script>
+                    const recEl = document.getElementById("cfgRecipient");
+                    const ccEl = document.getElementById("cfgCc");
+                    const freqEl = document.getElementById("cfgFrequency");
+                    const wdayEl = document.getElementById("cfgWeeklyDay");
+                    const timeEl = document.getElementById("cfgDailyTime");
+                    const retEl = document.getElementById("cfgRetentionDays");
+
+                    if (recEl) recEl.value = smtp.recipient || "";
+                    if (ccEl) ccEl.value = Array.isArray(smtp.cc) ? smtp.cc.join(", ") : (smtp.cc || "");
+                    if (freqEl) freqEl.value = sched.frequency || "daily";
+                    if (wdayEl) wdayEl.value = sched.weekly_day || "monday";
+                    if (timeEl) timeEl.value = sched.daily_time || "07:00";
+                    if (retEl) retEl.value = storage.retention_days || 30;
+
+                    toggleWeeklyDaySelector();
+                }
+            } catch (err) {
+                console.error("Failed to load config into form:", err);
+            }
+        }
+
+        async function saveHomeSettings(event) {
+            if (event) event.preventDefault();
+            const btn = document.getElementById("btnSaveSettings");
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Saving...`;
+
+            try {
+                const recipient = document.getElementById("cfgRecipient").value.trim();
+                const ccRaw = document.getElementById("cfgCc").value.trim();
+                const frequency = document.getElementById("cfgFrequency").value;
+                const weeklyDay = document.getElementById("cfgWeeklyDay").value;
+                const dailyTime = document.getElementById("cfgDailyTime").value.trim() || "07:00";
+                const retentionDays = parseInt(document.getElementById("cfgRetentionDays").value.trim()) || 30;
+
+                const ccList = ccRaw ? ccRaw.split(",").map(s => s.trim()).filter(Boolean) : [];
+
+                const payload = {
+                    smtp: {
+                        recipient: recipient,
+                        cc: ccList
+                    },
+                    schedule: {
+                        enabled: true,
+                        frequency: frequency,
+                        weekly_day: weeklyDay,
+                        daily_time: dailyTime,
+                        timezone: "Asia/Karachi"
+                    },
+                    storage: {
+                        retention_days: retentionDays
+                    }
+                };
+
+                const res = await fetch("/api/config", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    showToast("Settings successfully saved! Email recipients and schedule updated.", "success");
+                    await loadStatus();
+                } else {
+                    showToast(`Failed to save settings: ${data.message}`, "error");
+                }
+            } catch (err) {
+                showToast(`Save settings error: ${err.message}`, "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Settings`;
+            }
+        }
+
+        async function loadStatus() {
+            try {
+                const res = await fetch("/api/status");
+                if (!res.ok) throw new Error("Failed to fetch status");
+                const data = await res.json();
+
+                if (data.storage) {
+                    document.getElementById("diskFreeVal").textContent = data.storage.free_gb || "0";
+                    document.getElementById("backupRootText").textContent = data.storage.path || "/var/backups/FEMS_Backup";
+                }
+
+                document.getElementById("retentionDaysVal").textContent = data.retention_days || "30";
+                document.getElementById("totalFoldersCount").textContent = data.total_date_folders || "0";
+
+                if (data.schedule) {
+                    document.getElementById("schedTimeVal").textContent = `${data.schedule.daily_time || "07:00"} PKT`;
+                    document.getElementById("nextSchedVal").textContent = `Next: ${data.schedule.next_run_time || "Scheduled"}`;
+                }
+
+                const staging = data.environments?.staging;
+                if (staging) {
+                    document.getElementById("stagingDbInfo").textContent = `${staging.postgres?.name || "fems_staging"}`;
+                }
+
+                const prod = data.environments?.production;
+                if (prod) {
+                    document.getElementById("prodDbInfo").textContent = `${prod.postgres?.name || "fems_production"}`;
+                }
+
+            } catch (err) {
+                console.error("Status error:", err);
+            }
+        }
+
+        async function loadBackups() {
+            const container = document.getElementById("backupListContainer");
+            try {
+                const res = await fetch("/api/backups");
+                if (!res.ok) throw new Error("Failed to fetch backups");
+                const data = await res.json();
+
+                if (!data.backups || data.backups.length === 0) {
+                    container.innerHTML = `
+                        <div class="p-12 text-center text-slate-500">
+                            <i class="fa-solid fa-folder-open text-3xl mb-3 text-slate-600"></i>
+                            <p class="text-sm font-medium text-slate-400">No backup date folders found in repository.</p>
+                            <p class="text-xs text-slate-500 mt-1">Click "Run All Backups" to generate initial snapshots.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = "";
+                data.backups.forEach((b) => {
+                    const isSuccess = b.summary?.status === "SUCCESS";
+                    const statusBadge = isSuccess
+                        ? `<span class="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">SUCCESS</span>`
+                        : `<span class="px-2 py-0.5 rounded text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">${b.summary?.status || 'RECORDED'}</span>`;
+
+                    let subfoldersHtml = "";
+                    b.subfolders.forEach(sub => {
+                        const isStaging = sub.folder_name.toLowerCase().includes("staging");
+                        const envIcon = isStaging ? "fa-vial text-amber-400" : "fa-shield-halved text-rose-400";
+                        const envLabel = isStaging ? "FEMS Staging" : "FEMS Production";
+
+                        let filesHtml = "";
+                        sub.files.forEach(f => {
+                            const isPg = f.name.includes("postgres");
+                            const isMongo = f.name.includes("mongo");
+                            const isSum = f.name.includes("checksum") || f.name.includes("manifest");
+
+                            let icon = "fa-file text-slate-400";
+                            if (isPg) icon = "fa-database text-blue-400";
+                            else if (isMongo) icon = "fa-leaf text-emerald-400";
+                            else if (isSum) icon = "fa-file-shield text-slate-400";
+
+                            filesHtml += `
+                                <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 transition text-xs">
+                                    <div class="flex items-center space-x-2.5 truncate mr-3">
+                                        <i class="fa-solid ${icon}"></i>
+                                        <span class="font-mono text-slate-200 truncate" title="${f.name}">${f.name}</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3 shrink-0">
+                                        <span class="text-slate-400 font-mono">${f.size_mb} MB</span>
+                                        <a href="/api/backup/download?path=${encodeURIComponent(f.relative_path)}" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition flex items-center gap-1.5" title="Download">
+                                            <i class="fa-solid fa-download text-emerald-400"></i>
+                                            <span>Download</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            `;
+                        });
+
+                        subfoldersHtml += `
+                            <div class="bg-slate-900/90 rounded-xl border border-slate-800 p-4 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fa-solid ${envIcon}"></i>
+                                        <strong class="text-sm text-white font-semibold">${sub.folder_name}</strong>
+                                        <span class="text-xs text-slate-400">(${envLabel})</span>
+                                    </div>
+                                    <span class="text-xs font-mono text-slate-400">${sub.size_mb} MB total</span>
+                                </div>
+                                <div class="space-y-2">
+                                    ${filesHtml}
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    html += `
+                        <div class="p-5 rounded-2xl bg-slate-900/40 border border-slate-800 space-y-4 hover:border-slate-700 transition">
+                            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/60 pb-3">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-rose-400 font-bold text-xs font-mono">
+                                        <i class="fa-regular fa-calendar-days"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-base font-bold text-white font-mono flex items-center gap-2">
+                                            ${b.date}
+                                            ${statusBadge}
+                                        </h3>
+                                        <p class="text-xs text-slate-400">Total Archive Volume: <strong class="text-slate-200">${b.total_size_mb} MB</strong> &bull; ${b.subfolders.length} Environments</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                ${subfoldersHtml}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+
+            } catch (err) {
+                console.error("Backups list error:", err);
+                container.innerHTML = `<div class="p-8 text-center text-rose-400 text-sm">Failed to load backups list.</div>`;
+            }
+        }
+
+        async function triggerBackup(scope = "all") {
+            const scopeLabel = scope === "all" ? "Both Environments (Staging & Production)" : scope.toUpperCase();
+            showToast(`Executing snapshot for ${scopeLabel}... Please wait.`, "loading");
+
+            try {
+                const res = await fetch("/api/backup/trigger", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ scope: scope, send_email: true })
+                });
+                const data = await res.json();
+                if (data.status === "SUCCESS") {
+                    showToast(`Backup completed successfully in ${data.duration_sec}s! Email report sent.`, "success");
+                } else {
+                    showToast(`Backup finished with warnings: ${data.status}`, "error");
+                }
+                await loadBackups();
+                await loadStatus();
+            } catch (err) {
+                showToast(`Backup execution failed: ${err.message}`, "error");
+            }
+        }
+
+        async function testSmtp() {
+            showToast("Connecting to SMTP Relay (10.1.0.23:25) & sending test report...", "loading");
+            try {
+                const res = await fetch("/api/smtp/test", { method: "POST" });
+                const data = await res.json();
+                if (data.success) {
+                    showToast("Test email successfully delivered to recipients!", "success");
+                } else {
+                    showToast(`SMTP test failed: ${data.message}`, "error");
+                }
+            } catch (err) {
+                showToast(`SMTP Request error: ${err.message}`, "error");
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadConfigIntoForm();
+            loadStatus();
+            loadBackups();
+            setInterval(loadStatus, 60000);
+        });
+    </script>
 </body>
 </html>
