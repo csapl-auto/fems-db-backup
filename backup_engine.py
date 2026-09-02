@@ -436,7 +436,7 @@ class BackupEngine:
         with open(summary_path, "w", encoding="utf-8") as f:
             json.dump(summary, f, indent=2)
 
-        logger.info(f"=== FEMS Backup Completed in {total_duration}s [Status: {overall_status}] (Date Folder Size: {date_folder_size_mb} MB) ===")
+        logger.info(f"=== FEMS Backup Completed in {total_duration}s [Status: {overall_status}] (Total Backup Size: {total_backup_size_mb} MB) ===")
         return summary
 
     # --------------------------------------------------------------------------

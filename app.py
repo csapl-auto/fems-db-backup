@@ -286,21 +286,29 @@ class BackupDashboardHandler(BaseHTTPRequestHandler):
 
         # 1. API: Trigger Backup
         if path == "/api/backup/trigger":
-            scope = payload.get("scope", "all")
-            send_email = payload.get("send_email", True)
+            try:
+                scope = payload.get("scope", "all")
+                send_email = payload.get("send_email", True)
 
-            summary = engine.run_backup(trigger_source="MANUAL_DASHBOARD", scope=scope)
+                summary = engine.run_backup(trigger_source="MANUAL_DASHBOARD", scope=scope)
 
-            # Dispatch email report if enabled
-            if send_email:
-                try:
-                    cfg = load_config()
-                    mailer = Mailer(cfg.get("smtp", {}))
-                    mailer.send_backup_report(summary)
-                except Exception as mail_err:
-                    summary["email_error"] = str(mail_err)
+                # Dispatch email report if enabled
+                if send_email:
+                    try:
+                        cfg = load_config()
+                        mailer = Mailer(cfg.get("smtp", {}))
+                        mailer.send_backup_report(summary)
+                    except Exception as mail_err:
+                        summary["email_error"] = str(mail_err)
 
-            self._send_json(summary)
+                self._send_json(summary)
+            except Exception as e:
+                print(f"[ERROR] API Backup execution error: {e}")
+                self._send_json({
+                    "status": "FAILED",
+                    "error": str(e),
+                    "duration_sec": 0
+                }, status=500)
             return
 
         # 2. API: Test SMTP Connection & Email
