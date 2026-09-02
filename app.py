@@ -311,14 +311,21 @@ class BackupDashboardHandler(BaseHTTPRequestHandler):
             ok, msg = mailer.test_connection()
             if ok:
                 # Send sample test message
-                now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                now = datetime.now()
+                today_str = now.strftime("%Y-%m-%d")
+                date_folder_path = f"{engine.get_backup_dir()}/{today_str}".replace("\\", "/")
+                retention_days = cfg.get("storage", {}).get("retention_days", 30)
+
                 mock_summary = {
                     "status": "SUCCESS",
                     "trigger": "TEST_PROBE",
                     "scope": "all",
-                    "date_folder": engine.get_backup_dir(),
+                    "date_folder": date_folder_path,
+                    "date_folder_size_mb": 17.5,
                     "duration_sec": 1.25,
+                    "retention_days": retention_days,
                     "storage_free_gb": engine.get_disk_free_gb(),
+                    "hostname": socket.gethostname(),
                     "environments": {
                         "staging": {
                             "environment_name": "FEMS Staging (Test)",

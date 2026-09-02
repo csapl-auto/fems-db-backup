@@ -7,6 +7,7 @@ import os
 import sys
 import json
 import time
+import socket
 import shutil
 import hashlib
 import subprocess
@@ -398,6 +399,16 @@ class BackupEngine:
         total_duration = round(time.time() - total_start, 2)
         free_space_gb = self.get_disk_free_gb()
 
+        # Calculate total size of current date folder
+        date_folder_size_bytes = 0
+        for root, _, files in os.walk(target_date_dir):
+            for f in files:
+                try:
+                    date_folder_size_bytes += os.path.getsize(os.path.join(root, f))
+                except Exception:
+                    pass
+        date_folder_size_mb = round(date_folder_size_bytes / (1024 * 1024), 2)
+
         # Prune older than retention days
         retention_days = self.storage_cfg.get("retention_days", 30)
         pruned_folders_count = self.prune_old_backups(days_to_keep=retention_days)
@@ -408,9 +419,12 @@ class BackupEngine:
             "scope": scope,
             "date": date_folder_name,
             "timestamp": now.isoformat(),
-            "date_folder": target_date_dir,
+            "date_folder": target_date_dir.replace("\\", "/"),
+            "date_folder_size_mb": date_folder_size_mb,
             "duration_sec": total_duration,
             "storage_free_gb": free_space_gb,
+            "retention_days": retention_days,
+            "hostname": socket.gethostname(),
             "pruned_folders_count": pruned_folders_count,
             "environments": env_results
         }
@@ -420,7 +434,7 @@ class BackupEngine:
         with open(summary_path, "w", encoding="utf-8") as f:
             json.dump(summary, f, indent=2)
 
-        logger.info(f"=== FEMS Backup Completed in {total_duration}s [Status: {overall_status}] ===")
+        logger.info(f"=== FEMS Backup Completed in {total_duration}s [Status: {overall_status}] (Date Folder Size: {date_folder_size_mb} MB) ===")
         return summary
 
     # --------------------------------------------------------------------------
