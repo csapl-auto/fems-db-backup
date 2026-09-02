@@ -58,32 +58,42 @@ function toggleWeeklyDaySelector() {
     }
 }
 
-async function openSettingsModal() {
-    try {
-        const res = await fetch("/api/config");
-        if (res.ok) {
-            const cfg = await res.json();
+function openSettingsModal() {
+    const modal = document.getElementById("settingsModal");
+    if (modal) {
+        modal.classList.remove("hidden");
+    }
+    fetch("/api/config")
+        .then(res => res.json())
+        .then(cfg => {
             const smtp = cfg.smtp || {};
             const sched = cfg.schedule || {};
             const storage = cfg.storage || {};
 
-            document.getElementById("cfgRecipient").value = smtp.recipient || "";
-            document.getElementById("cfgCc").value = Array.isArray(smtp.cc) ? smtp.cc.join(", ") : (smtp.cc || "");
-            document.getElementById("cfgFrequency").value = sched.frequency || "daily";
-            document.getElementById("cfgWeeklyDay").value = sched.weekly_day || "monday";
-            document.getElementById("cfgDailyTime").value = sched.daily_time || "07:00";
-            document.getElementById("cfgRetentionDays").value = storage.retention_days || 30;
+            const recEl = document.getElementById("cfgRecipient");
+            const ccEl = document.getElementById("cfgCc");
+            const freqEl = document.getElementById("cfgFrequency");
+            const wdayEl = document.getElementById("cfgWeeklyDay");
+            const timeEl = document.getElementById("cfgDailyTime");
+            const retEl = document.getElementById("cfgRetentionDays");
+
+            if (recEl) recEl.value = smtp.recipient || "";
+            if (ccEl) ccEl.value = Array.isArray(smtp.cc) ? smtp.cc.join(", ") : (smtp.cc || "");
+            if (freqEl) freqEl.value = sched.frequency || "daily";
+            if (wdayEl) wdayEl.value = sched.weekly_day || "monday";
+            if (timeEl) timeEl.value = sched.daily_time || "07:00";
+            if (retEl) retEl.value = storage.retention_days || 30;
 
             toggleWeeklyDaySelector();
-        }
-    } catch (err) {
-        console.error("Failed to load settings:", err);
-    }
-    document.getElementById("settingsModal").classList.remove("hidden");
+        })
+        .catch(err => {
+            console.error("Failed to load settings:", err);
+        });
 }
 
 function closeSettingsModal() {
-    document.getElementById("settingsModal").classList.add("hidden");
+    const modal = document.getElementById("settingsModal");
+    if (modal) modal.classList.add("hidden");
 }
 
 async function saveSettings(event) {
