@@ -184,6 +184,10 @@ class Mailer:
                                 <td style="color: #64748b; padding: 5px 12px;">Storage Path:</td>
                                 <td style="color: #0f172a; font-family: monospace; font-size: 11px; padding: 5px 12px;">{date_folder}</td>
                             </tr>
+                            <tr>
+                                <td style="color: #64748b; padding: 5px 12px;">Terminal Command to View:</td>
+                                <td style="color: #0f172a; font-family: monospace; font-size: 11px; padding: 5px 12px; background-color: #f1f5f9; border-radius: 4px;"><code>ls -lh {date_folder}</code></td>
+                            </tr>
                         </table>
 
                         <!-- Environments Breakdown -->
