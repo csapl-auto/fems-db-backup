@@ -399,15 +399,16 @@ class BackupEngine:
         total_duration = round(time.time() - total_start, 2)
         free_space_gb = self.get_disk_free_gb()
 
-        # Calculate total size of current date folder
-        date_folder_size_bytes = 0
-        for root, _, files in os.walk(target_date_dir):
-            for f in files:
-                try:
-                    date_folder_size_bytes += os.path.getsize(os.path.join(root, f))
-                except Exception:
-                    pass
-        date_folder_size_mb = round(date_folder_size_bytes / (1024 * 1024), 2)
+        # Calculate total cumulative size of entire backup root folder (/var/backups/FEMS_Backup)
+        total_backup_bytes = 0
+        if os.path.exists(self.backup_dir):
+            for root, _, files in os.walk(self.backup_dir):
+                for f in files:
+                    try:
+                        total_backup_bytes += os.path.getsize(os.path.join(root, f))
+                    except Exception:
+                        pass
+        total_backup_size_mb = round(total_backup_bytes / (1024 * 1024), 2)
 
         # Prune older than retention days
         retention_days = self.storage_cfg.get("retention_days", 30)
@@ -420,7 +421,8 @@ class BackupEngine:
             "date": date_folder_name,
             "timestamp": now.isoformat(),
             "date_folder": target_date_dir.replace("\\", "/"),
-            "date_folder_size_mb": date_folder_size_mb,
+            "backup_root_dir": self.backup_dir.replace("\\", "/"),
+            "backup_folder_size_mb": total_backup_size_mb,
             "duration_sec": total_duration,
             "storage_free_gb": free_space_gb,
             "retention_days": retention_days,

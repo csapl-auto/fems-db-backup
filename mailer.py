@@ -63,7 +63,8 @@ class Mailer:
         is_success = backup_summary.get("status") == "SUCCESS"
         date_folder = backup_summary.get("date_folder", "/var/backups/FEMS_Backup")
         duration_sec = backup_summary.get("duration_sec", 1.25)
-        folder_size_mb = backup_summary.get("date_folder_size_mb", 0.0)
+        folder_size_mb = backup_summary.get("backup_folder_size_mb", backup_summary.get("date_folder_size_mb", 0.0))
+        folder_size_str = f"{folder_size_mb} MB" if folder_size_mb < 1024 else f"{round(folder_size_mb / 1024, 2)} GB ({folder_size_mb} MB)"
         retention_days = backup_summary.get("retention_days", 30)
         free_space_gb = backup_summary.get("storage_free_gb", 0)
         hostname = backup_summary.get("hostname", socket.gethostname())
@@ -170,7 +171,7 @@ class Mailer:
                             </tr>
                             <tr>
                                 <td width="38%" style="color: #64748b; padding: 5px 12px;">Backup Folder Size:</td>
-                                <td style="color: #0f172a; font-weight: bold; padding: 5px 12px;">{folder_size_mb} MB</td>
+                                <td style="color: #0f172a; font-weight: bold; padding: 5px 12px;">{folder_size_str}</td>
                             </tr>
                             <tr>
                                 <td style="color: #64748b; padding: 5px 12px;">Retention Horizon:</td>
