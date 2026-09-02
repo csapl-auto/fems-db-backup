@@ -48,6 +48,16 @@ function closeDrModal() {
     document.getElementById("drModal").classList.add("hidden");
 }
 
+function toggleWeeklyDaySelector() {
+    const freq = document.getElementById("cfgFrequency").value;
+    const weeklyContainer = document.getElementById("weeklyDayContainer");
+    if (freq === "weekly") {
+        weeklyContainer.classList.remove("hidden");
+    } else {
+        weeklyContainer.classList.add("hidden");
+    }
+}
+
 async function openSettingsModal() {
     try {
         const res = await fetch("/api/config");
@@ -59,8 +69,12 @@ async function openSettingsModal() {
 
             document.getElementById("cfgRecipient").value = smtp.recipient || "";
             document.getElementById("cfgCc").value = Array.isArray(smtp.cc) ? smtp.cc.join(", ") : (smtp.cc || "");
+            document.getElementById("cfgFrequency").value = sched.frequency || "daily";
+            document.getElementById("cfgWeeklyDay").value = sched.weekly_day || "monday";
             document.getElementById("cfgDailyTime").value = sched.daily_time || "07:00";
             document.getElementById("cfgRetentionDays").value = storage.retention_days || 30;
+
+            toggleWeeklyDaySelector();
         }
     } catch (err) {
         console.error("Failed to load settings:", err);
@@ -81,6 +95,8 @@ async function saveSettings(event) {
     try {
         const recipient = document.getElementById("cfgRecipient").value.trim();
         const ccRaw = document.getElementById("cfgCc").value.trim();
+        const frequency = document.getElementById("cfgFrequency").value;
+        const weeklyDay = document.getElementById("cfgWeeklyDay").value;
         const dailyTime = document.getElementById("cfgDailyTime").value.trim() || "07:00";
         const retentionDays = parseInt(document.getElementById("cfgRetentionDays").value.trim()) || 30;
 
@@ -93,6 +109,8 @@ async function saveSettings(event) {
             },
             schedule: {
                 enabled: true,
+                frequency: frequency,
+                weekly_day: weeklyDay,
                 daily_time: dailyTime,
                 timezone: "Asia/Karachi"
             },
@@ -109,7 +127,7 @@ async function saveSettings(event) {
 
         const data = await res.json();
         if (data.success) {
-            showToast("Settings successfully saved! Email recipients updated.", "success");
+            showToast("Settings successfully saved! Schedule & email preferences updated.", "success");
             closeSettingsModal();
             await loadStatus();
         } else {

@@ -61,6 +61,8 @@
   },
   "schedule": {
     "enabled": true,
+    "frequency": "daily",
+    "weekly_day": "monday",
     "daily_time": "07:00",
     "timezone": "Asia/Karachi"
   },

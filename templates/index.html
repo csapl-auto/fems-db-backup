@@ -252,17 +252,40 @@ mongorestore --uri="mongodb://fems_logger:SecureLogsPwd456@127.0.0.1:27017/fems_
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <!-- Daily Schedule Time -->
+                    <!-- Backup Frequency -->
                     <div>
-                        <label class="block font-semibold text-slate-200 mb-1">Daily Backup Time (PKT)</label>
-                        <input type="text" id="cfgDailyTime" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 font-mono focus:border-rose-500 focus:outline-none" placeholder="07:00">
+                        <label class="block font-semibold text-slate-200 mb-1">Backup Frequency</label>
+                        <select id="cfgFrequency" onchange="toggleWeeklyDaySelector()" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 font-medium focus:border-rose-500 focus:outline-none">
+                            <option value="daily">Daily (Every Day)</option>
+                            <option value="weekly">Weekly (Once a Week)</option>
+                        </select>
                     </div>
 
-                    <!-- Retention Horizon -->
-                    <div>
-                        <label class="block font-semibold text-slate-200 mb-1">Retention Horizon (Days)</label>
-                        <input type="number" id="cfgRetentionDays" min="1" max="365" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 font-mono focus:border-rose-500 focus:outline-none" placeholder="30">
+                    <!-- Weekly Day Picker (Shown when Weekly is selected) -->
+                    <div id="weeklyDayContainer" class="hidden">
+                        <label class="block font-semibold text-slate-200 mb-1">Select Day of Week</label>
+                        <select id="cfgWeeklyDay" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 font-medium focus:border-rose-500 focus:outline-none">
+                            <option value="monday">Every Monday</option>
+                            <option value="tuesday">Every Tuesday</option>
+                            <option value="wednesday">Every Wednesday</option>
+                            <option value="thursday">Every Thursday</option>
+                            <option value="friday">Every Friday</option>
+                            <option value="saturday">Every Saturday</option>
+                            <option value="sunday">Every Sunday</option>
+                        </select>
                     </div>
+
+                    <!-- Daily Backup Time -->
+                    <div id="dailyTimeContainer">
+                        <label class="block font-semibold text-slate-200 mb-1">Backup Time (PKT)</label>
+                        <input type="text" id="cfgDailyTime" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 font-mono focus:border-rose-500 focus:outline-none" placeholder="07:00">
+                    </div>
+                </div>
+
+                <!-- Retention Horizon -->
+                <div>
+                    <label class="block font-semibold text-slate-200 mb-1">Retention Horizon (Days)</label>
+                    <input type="number" id="cfgRetentionDays" min="1" max="365" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 font-mono focus:border-rose-500 focus:outline-none" placeholder="30">
                 </div>
 
                 <!-- SMTP Server Info (Read-Only Relay) -->
