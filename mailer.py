@@ -169,7 +169,7 @@ class Mailer:
                                 <td style="color: #0f172a; font-weight: bold; padding: 5px 12px;">{duration_sec} seconds</td>
                             </tr>
                             <tr>
-                                <td style="color: #64748b; padding: 5px 12px;">Date Folder Size:</td>
+                                <td width="38%" style="color: #64748b; padding: 5px 12px;">Backup Folder Size:</td>
                                 <td style="color: #0f172a; font-weight: bold; padding: 5px 12px;">{folder_size_mb} MB</td>
                             </tr>
                             <tr>
