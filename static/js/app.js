@@ -48,6 +48,81 @@ function closeDrModal() {
     document.getElementById("drModal").classList.add("hidden");
 }
 
+async function openSettingsModal() {
+    try {
+        const res = await fetch("/api/config");
+        if (res.ok) {
+            const cfg = await res.json();
+            const smtp = cfg.smtp || {};
+            const sched = cfg.schedule || {};
+            const storage = cfg.storage || {};
+
+            document.getElementById("cfgRecipient").value = smtp.recipient || "";
+            document.getElementById("cfgCc").value = Array.isArray(smtp.cc) ? smtp.cc.join(", ") : (smtp.cc || "");
+            document.getElementById("cfgDailyTime").value = sched.daily_time || "07:00";
+            document.getElementById("cfgRetentionDays").value = storage.retention_days || 30;
+        }
+    } catch (err) {
+        console.error("Failed to load settings:", err);
+    }
+    document.getElementById("settingsModal").classList.remove("hidden");
+}
+
+function closeSettingsModal() {
+    document.getElementById("settingsModal").classList.add("hidden");
+}
+
+async function saveSettings(event) {
+    if (event) event.preventDefault();
+    const btn = document.getElementById("btnSaveSettings");
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Saving...`;
+
+    try {
+        const recipient = document.getElementById("cfgRecipient").value.trim();
+        const ccRaw = document.getElementById("cfgCc").value.trim();
+        const dailyTime = document.getElementById("cfgDailyTime").value.trim() || "07:00";
+        const retentionDays = parseInt(document.getElementById("cfgRetentionDays").value.trim()) || 30;
+
+        const ccList = ccRaw ? ccRaw.split(",").map(s => s.trim()).filter(Boolean) : [];
+
+        const payload = {
+            smtp: {
+                recipient: recipient,
+                cc: ccList
+            },
+            schedule: {
+                enabled: true,
+                daily_time: dailyTime,
+                timezone: "Asia/Karachi"
+            },
+            storage: {
+                retention_days: retentionDays
+            }
+        };
+
+        const res = await fetch("/api/config", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            showToast("Settings successfully saved! Email recipients updated.", "success");
+            closeSettingsModal();
+            await loadStatus();
+        } else {
+            showToast(`Failed to save settings: ${data.message}`, "error");
+        }
+    } catch (err) {
+        showToast(`Save settings error: ${err.message}`, "error");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Settings`;
+    }
+}
+
 function copyToClipboard(text, label = "Checksum") {
     navigator.clipboard.writeText(text).then(() => {
         showToast(`${label} copied to clipboard!`, "success");
