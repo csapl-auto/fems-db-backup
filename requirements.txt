@@ -1,0 +1,2 @@
+# FEMS Backup Manager uses pure Python standard library for maximum reliability!
+# Zero third-party dependencies are required.

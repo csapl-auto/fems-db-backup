@@ -1,0 +1,85 @@
+{
+  "environments": {
+    "staging": {
+      "name": "FEMS Staging",
+      "folder_name": "FEMS_Staging",
+      "postgres": {
+        "enabled": true,
+        "host": "127.0.0.1",
+        "port": 5432,
+        "user": "fems_admin",
+        "password": "SecurePassword123",
+        "name": "fems_staging",
+        "docker_container": "fems-staging",
+        "use_docker_exec": true
+      },
+      "mongodb": {
+        "enabled": true,
+        "host": "127.0.0.1",
+        "port": 27017,
+        "user": "fems_logger",
+        "password": "SecureLogsPwd456",
+        "name": "fems_audit_staging_db",
+        "auth_source": "admin",
+        "docker_container": "fems-staging",
+        "use_docker_exec": true
+      }
+    },
+    "production": {
+      "name": "FEMS Production",
+      "folder_name": "FEMS_PROD",
+      "postgres": {
+        "enabled": true,
+        "host": "127.0.0.1",
+        "port": 5432,
+        "user": "fems_admin",
+        "password": "SecurePassword123",
+        "name": "fems_production",
+        "docker_container": "fems-production",
+        "use_docker_exec": true
+      },
+      "mongodb": {
+        "enabled": true,
+        "host": "127.0.0.1",
+        "port": 27017,
+        "user": "fems_logger",
+        "password": "SecureLogsPwd456",
+        "name": "fems_audit_db",
+        "auth_source": "admin",
+        "docker_container": "fems-production",
+        "use_docker_exec": true
+      }
+    }
+  },
+  "storage": {
+    "backup_root_dir": "/var/backups/FEMS_Backup",
+    "local_fallback_dir": "./FEMS_Backup",
+    "retention_days": 30,
+    "compress": true,
+    "generate_checksum": true,
+    "verify_on_completion": true
+  },
+  "schedule": {
+    "enabled": true,
+    "daily_time": "07:00",
+    "timezone": "Asia/Karachi"
+  },
+  "smtp": {
+    "enabled": true,
+    "server": "10.1.0.23",
+    "port": 25,
+    "use_tls": false,
+    "use_ssl": false,
+    "username": "",
+    "password": "",
+    "sender": "alerts@crescent.com.pk",
+    "sender_name": "FEMS Database Backup System",
+    "recipient": "itsupport@crescent.com.pk",
+    "cc": []
+  },
+  "server": {
+    "dashboard_port": 5051,
+    "dashboard_host": "0.0.0.0",
+    "system_name": "FEMS Staging & Production Backup Manager"
+  }
+}

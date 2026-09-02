@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FEMS Database Backup & Disaster Recovery Dashboard</title>
+    <!-- Tailwind CSS & FontAwesome Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-rose-500 selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-600 via-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-rose-500/20">
+                    <i class="fa-solid fa-fire-extinguisher text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+                        FEMS <span class="text-xs px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30">Dual-Env Backup & DR</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">PostgreSQL 16 & MongoDB 7 Enterprise Disaster Recovery</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <div id="liveClock" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700 text-xs text-slate-300 font-mono">
+                    <i class="fa-regular fa-clock text-rose-400"></i>
+                    <span id="currentTime">--:--:--</span>
+                </div>
+                <button onclick="testSmtp()" id="btnTestSmtp" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-slate-200 transition flex items-center gap-2">
+                    <i class="fa-solid fa-paper-plane text-cyan-400"></i>
+                    <span>Test Email</span>
+                </button>
+                <div class="relative inline-block text-left" id="backupDropdownContainer">
+                    <button onclick="triggerBackup('all')" id="btnMainBackup" class="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow-lg shadow-rose-600/30 transition flex items-center gap-2">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Run All Backups</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        
+        <!-- Alerts Banner (if any) -->
+        <div id="statusToast" class="hidden rounded-xl p-4 border transition-all duration-300 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <i id="toastIcon" class="text-lg"></i>
+                <span id="toastMsg" class="text-sm font-medium"></span>
+            </div>
+            <button onclick="closeToast()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <!-- Metric KPI Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <!-- FEMS Staging Health Card -->
+            <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-sm hover:border-slate-700 transition">
+                <div class="flex items-center justify-between text-slate-400 mb-3">
+                    <span class="text-xs uppercase font-semibold tracking-wider flex items-center gap-1.5">
+                        <i class="fa-solid fa-vial text-amber-400"></i> FEMS Staging
+                    </span>
+                    <span id="stagingStatusBadge" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span id="stagingStatusText">ONLINE</span>
+                    </span>
+                </div>
+                <div class="text-lg font-bold text-white tracking-tight" id="stagingDbInfo">fems_staging</div>
+                <div class="mt-2 text-xs text-slate-400 space-y-1">
+                    <div class="flex justify-between">
+                        <span>PostgreSQL:</span>
+                        <strong class="text-slate-200">5432</strong>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>MongoDB:</span>
+                        <strong class="text-slate-200">fems_audit_staging_db</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FEMS Production Health Card -->
+            <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-sm hover:border-slate-700 transition">
+                <div class="flex items-center justify-between text-slate-400 mb-3">
+                    <span class="text-xs uppercase font-semibold tracking-wider flex items-center gap-1.5">
+                        <i class="fa-solid fa-shield-halved text-rose-400"></i> FEMS Production
+                    </span>
+                    <span id="prodStatusBadge" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span id="prodStatusText">ONLINE</span>
+                    </span>
+                </div>
+                <div class="text-lg font-bold text-white tracking-tight" id="prodDbInfo">fems_production</div>
+                <div class="mt-2 text-xs text-slate-400 space-y-1">
+                    <div class="flex justify-between">
+                        <span>PostgreSQL:</span>
+                        <strong class="text-slate-200">5432</strong>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>MongoDB:</span>
+                        <strong class="text-slate-200">fems_audit_db</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schedule Card -->
+            <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-sm hover:border-slate-700 transition">
+                <div class="flex items-center justify-between text-slate-400 mb-3">
+                    <span class="text-xs uppercase font-semibold tracking-wider">Daily Schedule</span>
+                    <i class="fa-solid fa-calendar-check text-indigo-400"></i>
+                </div>
+                <div class="text-2xl font-bold text-white tracking-tight" id="schedTimeVal">07:00 AM</div>
+                <div class="mt-2 flex items-center gap-1.5 text-xs text-slate-400">
+                    <i class="fa-solid fa-rotate text-indigo-400"></i>
+                    <span id="nextSchedVal">Next: Today at 07:00</span>
+                </div>
+            </div>
+
+            <!-- Retention & Disk Card -->
+            <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-sm hover:border-slate-700 transition">
+                <div class="flex items-center justify-between text-slate-400 mb-3">
+                    <span class="text-xs uppercase font-semibold tracking-wider">Storage & Retention</span>
+                    <i class="fa-solid fa-hard-drive text-teal-400"></i>
+                </div>
+                <div class="text-2xl font-bold text-white tracking-tight">
+                    <span id="diskFreeVal">--</span> <span class="text-sm font-normal text-slate-400">GB Free</span>
+                </div>
+                <div class="mt-2 flex items-center justify-between text-xs text-slate-400">
+                    <span>Retention Horizon:</span>
+                    <strong class="text-slate-200"><span id="retentionDaysVal">30</span> Days</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action & Control Toolbar -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center space-x-2">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 mr-2">Targeted Snapshots:</span>
+                <button onclick="triggerBackup('staging')" id="btnBackupStaging" class="px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-medium transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-flask"></i> Backup Staging Only
+                </button>
+                <button onclick="triggerBackup('production')" id="btnBackupProd" class="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-medium transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-server"></i> Backup Prod Only
+                </button>
+                <button onclick="triggerBackup('all')" id="btnBackupAll" class="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-medium transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-layer-group"></i> Backup Both (All)
+                </button>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <button onclick="openDrModal()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-slate-300 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-book-medical text-rose-400"></i> Restore Runbook
+                </button>
+                <button onclick="loadBackups(); loadStatus();" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-slate-300 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-rotate text-indigo-400"></i> Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Backup Repository Tree Explorer -->
+        <div class="rounded-2xl bg-slate-900 border border-slate-800 overflow-hidden shadow-sm">
+            <div class="p-5 border-b border-slate-800 flex flex-wrap items-center justify-between gap-4 bg-slate-900/50">
+                <div>
+                    <h2 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-folder-tree text-rose-400"></i> FEMS Backup Repository Explorer
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">
+                        Target Folder: <span id="backupRootText" class="font-mono text-slate-300">/var/backups/FEMS_Backup</span> &bull; <span id="totalFoldersCount">0</span> Date Folders
+                    </p>
+                </div>
+            </div>
+
+            <div id="backupListContainer" class="divide-y divide-slate-800/60 p-4 space-y-4">
+                <div class="p-8 text-center text-slate-500 text-sm">
+                    <i class="fa-solid fa-circle-notch fa-spin text-lg mb-2"></i>
+                    <p>Loading backup archives...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Disaster Recovery Quick Restore Modal -->
+    <div id="drModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Disaster Recovery & Restore Commands
+                </h3>
+                <button onclick="closeDrModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="space-y-4 text-xs text-slate-300 leading-relaxed">
+                <div>
+                    <h4 class="font-bold text-slate-200 text-sm mb-1 text-rose-400">1. Restore PostgreSQL 16 (Production)</h4>
+                    <p class="text-slate-400 mb-1.5">Execute inside or against the Docker container:</p>
+                    <pre class="bg-slate-950 p-3 rounded-lg border border-slate-800 font-mono text-emerald-400 select-all overflow-x-auto">docker exec -i fems-production pg_restore -U fems_admin -d fems_production --clean --if-exists &lt; postgres_fems_production_YYYYMMDD.dump</pre>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-slate-200 text-sm mb-1 text-amber-400">2. Restore MongoDB 7 Audit DB (Production)</h4>
+                    <p class="text-slate-400 mb-1.5">Execute against the MongoDB container:</p>
+                    <pre class="bg-slate-950 p-3 rounded-lg border border-slate-800 font-mono text-emerald-400 select-all overflow-x-auto">mongorestore --uri="mongodb://fems_logger:SecureLogsPwd456@127.0.0.1:27017/fems_audit_db?authSource=admin" --archive=mongodb_fems_audit_db_YYYYMMDD.archive --gzip --drop</pre>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-slate-200 text-sm mb-1 text-cyan-400">3. Restore Staging PostgreSQL & MongoDB</h4>
+                    <pre class="bg-slate-950 p-3 rounded-lg border border-slate-800 font-mono text-emerald-400 select-all overflow-x-auto">docker exec -i fems-staging pg_restore -U fems_admin -d fems_staging --clean --if-exists &lt; postgres_fems_staging_YYYYMMDD.dump
+mongorestore --uri="mongodb://fems_logger:SecureLogsPwd456@127.0.0.1:27017/fems_audit_staging_db?authSource=admin" --archive=mongodb_fems_audit_staging_YYYYMMDD.archive --gzip --drop</pre>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-800 flex justify-end">
+                <button onclick="closeDrModal()" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition">Close Runbook</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
