@@ -64,7 +64,7 @@ class Mailer:
         date_folder = backup_summary.get("date_folder", "/var/backups/FEMS_Backup")
         duration_sec = backup_summary.get("duration_sec", 1.25)
         folder_size_mb = backup_summary.get("backup_folder_size_mb", backup_summary.get("date_folder_size_mb", 0.0))
-        folder_size_str = f"{folder_size_mb} MB" if folder_size_mb < 1024 else f"{round(folder_size_mb / 1024, 2)} GB ({folder_size_mb} MB)"
+        folder_size_str = f"{folder_size_mb} MB" if folder_size_mb < 1024 else f"{round(folder_size_mb / 1024, 2)} GB"
         retention_days = backup_summary.get("retention_days", 30)
         free_space_gb = backup_summary.get("storage_free_gb", 0)
         hostname = backup_summary.get("hostname", socket.gethostname())
