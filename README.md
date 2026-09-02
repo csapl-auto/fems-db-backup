@@ -2,7 +2,7 @@
 
 Enterprise-grade, automated database backup and disaster recovery management system for the **FEMS (Fire Extinguisher Management System)** across both **Staging** and **Production** environments.
 
-![Port](https://img.shields.io/badge/port-5051-rose)
+![Port](https://img.shields.io/badge/port-5050-rose)
 ![Databases](https://img.shields.io/badge/database-PostgreSQL%2016%20%2B%20MongoDB%207-blue)
 ![Retention](https://img.shields.io/badge/retention-30%20Days-orange)
 ![Schedule](https://img.shields.io/badge/schedule-07%3A00%20AM%20Daily-indigo)
@@ -11,7 +11,7 @@ Enterprise-grade, automated database backup and disaster recovery management sys
 
 ## 🌟 Key Features
 
-- **Decoupled & Isolated**: Runs completely outside the main FEMS application directory (Port `5051`).
+- **Decoupled & Isolated**: Runs completely outside the main FEMS application directory (Port `5050`).
 - **Dual-Environment Architecture**: Captures isolated snapshots for both **FEMS Staging** and **FEMS Production**.
 - **Multi-Database Support**:
   - **PostgreSQL 16**: High-speed custom format snapshots (`pg_dump -Fc -Z 6`).
@@ -56,13 +56,13 @@ sudo ./install_service.sh
 
 ### 2. Allow Dashboard Port
 ```bash
-sudo ufw allow 5051/tcp
+sudo ufw allow 5050/tcp
 ```
 
 ### 3. Open Web Dashboard
 Navigate to:
 ```text
-http://<YOUR_SERVER_IP>:5051
+http://<YOUR_SERVER_IP>:5050
 ```
 
 ---

@@ -13,7 +13,7 @@ WORKDIR /app
 COPY . /app
 
 # Expose web dashboard port
-EXPOSE 5051
+EXPOSE 5050
 
 # Environment settings
 ENV PYTHONUNBUFFERED=1

@@ -80,7 +80,7 @@
     "cc": []
   },
   "server": {
-    "dashboard_port": 5051,
+    "dashboard_port": 5050,
     "dashboard_host": "0.0.0.0",
     "system_name": "FEMS Staging & Production Backup Manager"
   }

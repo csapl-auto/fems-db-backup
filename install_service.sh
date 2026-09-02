@@ -72,7 +72,7 @@ systemctl is-active --quiet "${SERVICE_NAME}" && echo "✅ FEMS Backup Manager i
 echo ""
 echo "==========================================================="
 echo " Installation Complete!"
-echo " Web Dashboard:   http://$(hostname -I | awk '{print $1}'):5051"
+echo " Web Dashboard:   http://$(hostname -I | awk '{print $1}'):5050"
 echo " Service Logs:    sudo journalctl -u ${SERVICE_NAME} -f"
 echo " Backup Folder:   ${BACKUP_DIR}"
 echo "==========================================================="

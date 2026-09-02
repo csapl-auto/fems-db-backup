@@ -152,4 +152,4 @@ If the entire VM server fails and a new VM is provisioned:
 
 - **Database Administrator**: DBA Team (`itsupport@crescent.com.pk`)
 - **System Relay**: `10.1.0.23:25`
-- **Dashboard Portal**: `http://10.11.0.41:5051`
+- **Dashboard Portal**: `http://10.11.0.41:5050`

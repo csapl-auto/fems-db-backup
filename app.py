@@ -373,7 +373,7 @@ def run_server():
     cfg = load_config()
     server_cfg = cfg.get("server", {})
     host = server_cfg.get("dashboard_host", "0.0.0.0")
-    port = int(server_cfg.get("dashboard_port", 5051))
+    port = int(server_cfg.get("dashboard_port", 5050))
 
     httpd = ThreadingHTTPServer((host, port), BackupDashboardHandler)
     print(f"===========================================================")
